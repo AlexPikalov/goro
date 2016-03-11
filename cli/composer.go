@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"go/build"
 	"log"
 	"os"
 	"os/exec"
@@ -14,7 +13,7 @@ import (
 )
 
 const DEFAULT_GOROFILE = "./gorofile.go"
-const LAUNCHER = "./launcher/launcher.go"
+const LAUNCHER = "/src/github.com/AlexPikalov/goro/launcher/launcher.go"
 const DEFAULT_CONTAINER = "./containers"
 
 type Composer struct {
@@ -72,8 +71,8 @@ func (c *Composer) ComposeBin() (string, error) {
 	}
 
 	// copy launcher to the container
-	c.GetLauncher()
-	launcherFile, err := filepath.Abs(LAUNCHER)
+	fmt.Println(c.GetLauncherPath())
+	launcherFile, err := filepath.Abs(c.GetLauncherPath())
 	if err != nil {
 		return "", err
 	}
@@ -109,14 +108,9 @@ func (c *Composer) RunBin(path string) ([]byte, error) {
 	return cmd.Output()
 }
 
-func (c *Composer) GetLauncher() (string, error) {
-	importContext := build.Default
-	pack, err := importContext.ImportDir("github.com/AlexPikalov/goro/launcher", build.FindOnly)
-	if err != nil {
-		return "", err
-	}
-	fmt.Println(pack.GoFiles)
-	return "", nil
+func (c *Composer) GetLauncherPath() string {
+	gopath := os.Getenv("GOPATH")
+	return filepath.Join(gopath, LAUNCHER)
 }
 
 func newLogger(logfile, prefix string) (*log.Logger, error) {
