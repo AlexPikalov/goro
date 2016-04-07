@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/AlexPikalov/goro"
-	"github.com/AlexPikalov/goro/utils"
+	"github.com/AlexPikalov/goro/utils/files"
+	"github.com/AlexPikalov/goro/utils/gorolog"
 )
 
 const DEFAULT_GOROFILE = "./gorofile.go"
@@ -26,7 +27,7 @@ func NewComposer() *Composer {
 	c := &Composer{}
 	c.Config.Id = fmt.Sprintf("%d", time.Now().UnixNano())
 	c.Config.Container = DEFAULT_CONTAINER
-	l, err := newLogger(c.Config.LogFile, "")
+	l, err := gorolog.NewGoroLog(c.Config.LogFile)
 	if err != nil {
 		panic("cannot create composer logger because of " + err.Error())
 		return nil
@@ -65,7 +66,7 @@ func (c *Composer) ComposeBin() (string, error) {
 		return "", err
 	}
 
-	err = utils.FS.CopyFile(goroFile, destGoroFile)
+	err = files.CopyFile(goroFile, destGoroFile)
 	if err != nil {
 		return "", err
 	}
@@ -82,25 +83,27 @@ func (c *Composer) ComposeBin() (string, error) {
 		return "", err
 	}
 
-	err = utils.FS.CopyFile(launcherFile, destLauncher)
+	err = files.CopyFile(launcherFile, destLauncher)
 	if err != nil {
 		return "", err
 	}
 
-	err = c.compileBin()
+	out, err := c.compileBin()
 	if err != nil {
+		fmt.Printf("Compilation Error: %s\n", string(out))
+		c.Logger.Fatalf("Compilation Error: %s", string(out))
 		return "", err
 	}
 
 	return c.GetContainerPath() + "/goro", nil
 }
 
-func (c *Composer) compileBin() error {
+func (c *Composer) compileBin() ([]byte, error) {
 	fmt.Println("building...")
 	cmd := exec.Command("go", "build", "-o", "goro")
 	cmd.Dir = c.GetContainerPath()
-	_, err := cmd.Output()
-	return err
+	out, err := cmd.Output()
+	return out, err
 }
 
 func (c *Composer) RunBin(path string) ([]byte, error) {
@@ -113,22 +116,22 @@ func (c *Composer) GetLauncherPath() string {
 	return filepath.Join(gopath, LAUNCHER)
 }
 
-func newLogger(logfile, prefix string) (*log.Logger, error) {
-	var lf *os.File
-	if logfile == "" {
-		lf = os.Stdout
-	} else {
-		path, err := filepath.Abs(logfile)
-		if err != nil {
-			return nil, err
-		}
-		lf, err = os.Create(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return log.New(lf, prefix, log.Lshortfile), nil
-}
+//func newLogger(logfile, prefix string) (*log.Logger, error) {
+//	var lf *os.File
+//	if logfile == "" {
+//		lf = os.Stdout
+//	} else {
+//		path, err := filepath.Abs(logfile)
+//		if err != nil {
+//			return nil, err
+//		}
+//		lf, err = os.Create(path)
+//		if err != nil {
+//			return nil, err
+//		}
+//	}
+//	return log.New(lf, prefix, log.Lshortfile), nil
+//}
 
 type ComposerConfig struct {
 	Id            string

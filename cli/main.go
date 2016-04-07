@@ -53,7 +53,7 @@ func InitConfig(c *Composer) error {
 	flag.StringVar(&c.Config.Gorofile, "gorofile", DEFAULT_GOROFILE, "Path to goro file. Optional")
 	flag.BoolVar(&c.Config.KeepContainer, "keep", false, "Keep container with bin")
 	flag.StringVar(&id, "id", "", "Goro id")
-	flag.StringVar(&c.Config.LogFile, "log", "", "Log file")
+	flag.StringVar(&c.Config.LogFile, "log", "gorocli.log", "Log file")
 	flag.StringVar(&c.Config.Container, "dst", DEFAULT_CONTAINER, "Container Folder")
 	flag.Parse()
 

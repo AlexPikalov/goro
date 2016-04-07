@@ -14,7 +14,7 @@ type Task struct {
 	worker     Worker
 }
 
-func NewTask(workerFn WorkerFn, logger *log.Logger) *Task {
+func NewTask(workerFn WorkerFn, logger *log.Logger, args ...Arg) *Task {
 	pipe := NewPipeSync()
 
 	task := &Task{
@@ -27,6 +27,7 @@ func NewTask(workerFn WorkerFn, logger *log.Logger) *Task {
 		reader: task.in,
 		writer: task.out,
 		log:    logger,
+		args:   args,
 	}
 
 	task.worker.SetContext(ctx)

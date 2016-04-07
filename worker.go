@@ -40,7 +40,10 @@ type Context struct {
 	reader *PipeSync
 	writer *PipeSync
 	log    *log.Logger
+	args   []Arg
 }
+
+type Arg interface{}
 
 func (ctx *Context) GetReader() (*PipeSync, error) {
 	var err error
@@ -64,6 +67,10 @@ func (ctx *Context) GetWriter() (*PipeSync, error) {
 
 func (ctx *Context) SetWriter(w *PipeSync) {
 	ctx.writer = w
+}
+
+func (ctx *Context) GetArgs() []Arg {
+	return ctx.args
 }
 
 func (ctx *Context) GetLog() *log.Logger {

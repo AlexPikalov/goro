@@ -7,7 +7,7 @@ import (
 
 type Goro interface {
 	AddTask(string, WorkerFn)
-	LoadTask(string) *Task
+	LoadTask(string, ...Arg) *Task
 }
 
 type TaskManager struct {
@@ -26,9 +26,9 @@ func (manager *TaskManager) AddTask(name string, wf WorkerFn) {
 	manager.tasks[name] = wf
 }
 
-func (manager *TaskManager) LoadTask(name string) *Task {
+func (manager *TaskManager) LoadTask(name string, args ...Arg) *Task {
 	if fn, ok := manager.tasks[name]; ok {
-		return NewTask(fn, manager.log)
+		return NewTask(fn, manager.log, args...)
 	}
 	log.Fatal(fmt.Sprintf("task %s not found", name))
 	return nil
